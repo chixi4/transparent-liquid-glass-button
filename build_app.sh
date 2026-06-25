@@ -2,7 +2,7 @@
 # Build the app bundle
 
 APP_NAME="Swap"
-BINARY_PATH=".build/debug/ChannelSwap"
+BINARY_PATH=".build/debug/TransparentLiquidGlassButton"
 APP_DIR="$APP_NAME.app"
 CONTENTS_DIR="$APP_DIR/Contents"
 MACOS_DIR="$CONTENTS_DIR/MacOS"
@@ -26,9 +26,9 @@ cat > "$CONTENTS_DIR/Info.plist" << EOF
     <key>CFBundleExecutable</key>
     <string>$APP_NAME</string>
     <key>CFBundleIdentifier</key>
-    <string>com.channelswap.app</string>
+    <string>com.transparentliquidglassbutton.app</string>
     <key>CFBundleName</key>
-    <string>Swap</string>
+    <string>TransparentLiquidGlassButton</string>
     <key>CFBundleVersion</key>
     <string>1.0</string>
     <key>CFBundleShortVersionString</key>

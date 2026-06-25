@@ -2,20 +2,20 @@
 import PackageDescription
 
 let package = Package(
-    name: "ChannelSwap",
+    name: "transparent-liquid-glass-button",
     platforms: [
         .macOS(.v26)
     ],
     targets: [
         .executableTarget(
-            name: "ChannelSwap",
+            name: "TransparentLiquidGlassButton",
             swiftSettings: [
                 .enableUpcomingFeature("ApproachableConcurrency"),
             ]
         ),
         .testTarget(
-            name: "ChannelSwapTests",
-            dependencies: ["ChannelSwap"],
+            name: "TransparentLiquidGlassButtonTests",
+            dependencies: ["TransparentLiquidGlassButton"],
             swiftSettings: [
                 .enableUpcomingFeature("ApproachableConcurrency"),
             ]

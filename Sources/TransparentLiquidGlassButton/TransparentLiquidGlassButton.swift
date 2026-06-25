@@ -4,6 +4,8 @@ import AppKit
 class DraggableGlassButton: NSButton {
     private let glassView = NSGlassEffectView()
     private var isDragging = false
+    private var dragScreenStart: NSPoint = .zero
+    private var windowFrameStart: NSPoint = .zero
     
     let capsuleHeight: CGFloat = 56
     let capsuleWidth: CGFloat = 130
@@ -19,19 +21,18 @@ class DraggableGlassButton: NSButton {
     }
     
     private func setup() {
-        self.title = ""
-        self.font = NSFont.systemFont(ofSize: 18, weight: .semibold)
-        self.bezelStyle = .rounded
-        self.isBordered = false
+        title = ""
+        bezelStyle = .rounded
+        isBordered = false
         
-        glassView.frame = self.bounds
+        glassView.frame = bounds
         glassView.autoresizingMask = [.width, .height]
         glassView.cornerRadius = capsuleHeight / 2
         if #available(macOS 27, *) {
             glassView.style = .clear
             glassView.effectIsInteractive = true
         }
-        self.addSubview(glassView, positioned: .below, relativeTo: nil)
+        addSubview(glassView, positioned: .below, relativeTo: nil)
         
         wantsLayer = true
         layer?.cornerRadius = capsuleHeight / 2
@@ -40,10 +41,7 @@ class DraggableGlassButton: NSButton {
         layer?.masksToBounds = false
     }
     
-    // MARK: - Drag handling — uses screen coordinates to avoid jitter
-    private var dragScreenStart: NSPoint = .zero
-    private var windowFrameStart: NSPoint = .zero
-    
+    // MARK: - Drag (screen coordinates to avoid jitter)
     override func mouseDown(with event: NSEvent) {
         isDragging = false
         dragScreenStart = NSEvent.mouseLocation
@@ -70,26 +68,12 @@ class DraggableGlassButton: NSButton {
     }
 }
 
-// MARK: - Transparent Titled Window
-func createTransparentPNG() -> String {
-    let path = "/tmp/transparent_bg.png"
-    let image = NSImage(size: NSSize(width: 600, height: 400), flipped: false) { _ in true }
-    guard let cgImage = image.cgImage(forProposedRect: nil, context: nil, hints: nil) else { return "" }
-    let rep = NSBitmapImageRep(cgImage: cgImage)
-    rep.size = NSSize(width: 600, height: 400)
-    if let data = rep.representation(using: .png, properties: [:]) {
-        try? data.write(to: URL(fileURLWithPath: path))
-    }
-    return path
-}
-
+// MARK: - Transparent Floating Window
 @MainActor
 class AppDelegate: NSObject, NSApplicationDelegate {
     private var window: NSWindow!
     
     func applicationDidFinishLaunching(_ notification: Notification) {
-        let _ = createTransparentPNG()
-        
         let button = DraggableGlassButton()
         let padding: CGFloat = 20
         let winW = button.capsuleWidth + padding * 2
@@ -120,20 +104,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         
         guard let contentView = window.contentView else { return }
         
-        // Transparent PNG background
-        let bgView = NSImageView(frame: contentView.bounds)
-        bgView.autoresizingMask = [.width, .height]
-        if let img = NSImage(contentsOfFile: "/tmp/transparent_bg.png") {
-            bgView.image = img
-        }
-        contentView.addSubview(bgView)
-        
-        // Capsule button
         button.frame = NSRect(x: padding, y: padding, width: button.capsuleWidth, height: button.capsuleHeight)
         contentView.addSubview(button)
     }
 }
 
+// MARK: - Entry Point
 @main struct MainApp {
     static func main() {
         let app = NSApplication.shared
