@@ -75,6 +75,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     
     func applicationDidFinishLaunching(_ notification: Notification) {
         let button = DraggableGlassButton()
+        button.target = self
+        button.action = #selector(swapAudio)
         let padding: CGFloat = 20
         let winW = button.capsuleWidth + padding * 2
         let winH = button.capsuleHeight + padding * 2
@@ -106,6 +108,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         
         button.frame = NSRect(x: padding, y: padding, width: button.capsuleWidth, height: button.capsuleHeight)
         contentView.addSubview(button)
+    }
+    
+    @objc private func swapAudio() {
+        _ = AudioChannelSwapper.swap()
     }
 }
 

@@ -26,9 +26,9 @@ cat > "$CONTENTS_DIR/Info.plist" << EOF
     <key>CFBundleExecutable</key>
     <string>$APP_NAME</string>
     <key>CFBundleIdentifier</key>
-    <string>com.transparentliquidglassbutton.app</string>
+    <string>com.swap.app</string>
     <key>CFBundleName</key>
-    <string>TransparentLiquidGlassButton</string>
+    <string>Swap</string>
     <key>CFBundleVersion</key>
     <string>1.0</string>
     <key>CFBundleShortVersionString</key>
