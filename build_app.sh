@@ -1,20 +1,29 @@
 #!/bin/bash
-# Build the app bundle
+set -euo pipefail
 
-APP_NAME="Swap"
-BINARY_PATH=".build/debug/TransparentLiquidGlassButton"
-APP_DIR="$APP_NAME.app"
+# Build the app bundle from the repository root, regardless of the caller's cwd.
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+cd "$SCRIPT_DIR"
+
+APP_NAME="${APP_NAME:-Swap}"
+CONFIGURATION="${CONFIGURATION:-debug}"
+APP_DIR="${APP_DIR:-$APP_NAME.app}"
+BINARY_PATH="${BINARY_PATH:-.build/$CONFIGURATION/TransparentLiquidGlassButton}"
+VERSION="${VERSION:-1.0}"
 CONTENTS_DIR="$APP_DIR/Contents"
 MACOS_DIR="$CONTENTS_DIR/MacOS"
 RESOURCES_DIR="$CONTENTS_DIR/Resources"
 
-# Clean
-rm -rf "$APP_DIR"
+swift build -c "$CONFIGURATION"
 
-# Create structure
+if [[ ! -x "$BINARY_PATH" ]]; then
+    echo "❌ 找不到可执行文件：$BINARY_PATH" >&2
+    exit 1
+fi
+
+rm -rf "$APP_DIR"
 mkdir -p "$MACOS_DIR" "$RESOURCES_DIR"
 
-# Copy binary
 cp "$BINARY_PATH" "$MACOS_DIR/$APP_NAME"
 
 # Create Info.plist
@@ -30,9 +39,9 @@ cat > "$CONTENTS_DIR/Info.plist" << EOF
     <key>CFBundleName</key>
     <string>Swap</string>
     <key>CFBundleVersion</key>
-    <string>1.0</string>
+    <string>$VERSION</string>
     <key>CFBundleShortVersionString</key>
-    <string>1.0</string>
+    <string>$VERSION</string>
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>LSUIElement</key>

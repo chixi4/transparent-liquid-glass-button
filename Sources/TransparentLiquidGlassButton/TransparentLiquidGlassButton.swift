@@ -2,6 +2,8 @@ import AppKit
 
 // MARK: - Draggable Glass Capsule Button
 class DraggableGlassButton: NSButton {
+    nonisolated static let dragThreshold: CGFloat = 4
+
     private let glassView = NSGlassEffectView()
     private var isDragging = false
     private var dragScreenStart: NSPoint = .zero
@@ -24,6 +26,11 @@ class DraggableGlassButton: NSButton {
         title = ""
         bezelStyle = .rounded
         isBordered = false
+        font = .systemFont(ofSize: 22, weight: .semibold)
+        contentTintColor = .labelColor
+        toolTip = "点击交换左右声道，拖动可移动按钮"
+        setAccessibilityLabel("交换左右声道")
+        setAccessibilityHelp("点击交换左右声道，拖动可移动按钮")
         
         glassView.frame = bounds
         glassView.autoresizingMask = [.width, .height]
@@ -46,12 +53,24 @@ class DraggableGlassButton: NSButton {
         isDragging = false
         dragScreenStart = NSEvent.mouseLocation
         windowFrameStart = window?.frame.origin ?? .zero
+        highlight(true)
     }
     
     override func mouseDragged(with event: NSEvent) {
-        isDragging = true
         guard let win = window else { return }
         let currentScreen = NSEvent.mouseLocation
+
+        if !isDragging {
+            guard Self.shouldStartDragging(
+                from: dragScreenStart,
+                to: currentScreen
+            ) else {
+                return
+            }
+            isDragging = true
+            highlight(false)
+        }
+
         let dx = currentScreen.x - dragScreenStart.x
         let dy = currentScreen.y - dragScreenStart.y
         win.setFrameOrigin(NSPoint(
@@ -61,10 +80,33 @@ class DraggableGlassButton: NSButton {
     }
     
     override func mouseUp(with event: NSEvent) {
-        if !isDragging {
-            _ = target?.perform(action, with: self)
+        defer {
+            highlight(false)
+            isDragging = false
         }
-        isDragging = false
+
+        if !isDragging, let action {
+            NSApp.sendAction(action, to: target, from: self)
+        }
+    }
+
+    nonisolated static func shouldStartDragging(
+        from start: NSPoint,
+        to current: NSPoint,
+        threshold: CGFloat = dragThreshold
+    ) -> Bool {
+        let dx = current.x - start.x
+        let dy = current.y - start.y
+        let distanceSquared = dx * dx + dy * dy
+        let thresholdSquared = threshold * threshold
+        return distanceSquared > thresholdSquared
+    }
+
+    func showFeedback(symbol: String, message: String, color: NSColor) {
+        title = symbol
+        toolTip = message
+        contentTintColor = color
+        setAccessibilityValue(message)
     }
 }
 
@@ -72,9 +114,10 @@ class DraggableGlassButton: NSButton {
 @MainActor
 class AppDelegate: NSObject, NSApplicationDelegate {
     private var window: NSWindow!
+    private var button: DraggableGlassButton!
     
     func applicationDidFinishLaunching(_ notification: Notification) {
-        let button = DraggableGlassButton()
+        button = DraggableGlassButton()
         button.target = self
         button.action = #selector(swapAudio)
         let padding: CGFloat = 20
@@ -111,7 +154,17 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
     
     @objc private func swapAudio() {
-        _ = AudioChannelSwapper.swap()
+        switch AudioChannelSwapper.swap() {
+        case .success(let result):
+            let message = "声道已交换：\(result.before) → \(result.after)"
+            button.showFeedback(symbol: "✓", message: message, color: .systemGreen)
+            print("🔊 AudioChannelSwapper: \(result.before) → \(result.after)")
+        case .failure(let error):
+            let message = "声道交换失败：\(error.localizedDescription)"
+            button.showFeedback(symbol: "!", message: message, color: .systemRed)
+            NSSound.beep()
+            print("❌ AudioChannelSwapper: \(error.localizedDescription)")
+        }
     }
 }
 
