@@ -102,10 +102,9 @@ class DraggableGlassButton: NSButton {
         return distanceSquared > thresholdSquared
     }
 
-    func showFeedback(symbol: String, message: String, color: NSColor) {
-        title = symbol
+    func updateStatus(message: String) {
+        title = ""
         toolTip = message
-        contentTintColor = color
         setAccessibilityValue(message)
     }
 }
@@ -157,11 +156,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         switch AudioChannelSwapper.swap() {
         case .success(let result):
             let message = "声道已交换：\(result.before) → \(result.after)"
-            button.showFeedback(symbol: "✓", message: message, color: .systemGreen)
+            button.updateStatus(message: message)
             print("🔊 AudioChannelSwapper: \(result.before) → \(result.after)")
         case .failure(let error):
             let message = "声道交换失败：\(error.localizedDescription)"
-            button.showFeedback(symbol: "!", message: message, color: .systemRed)
+            button.updateStatus(message: message)
             NSSound.beep()
             print("❌ AudioChannelSwapper: \(error.localizedDescription)")
         }
