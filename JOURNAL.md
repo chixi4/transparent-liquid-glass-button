@@ -35,3 +35,10 @@
 - 修正 `run_tests.sh`，显式加载当前 Command Line Tools 未自动传入的 `TestingMacros`；5 个测试全部通过。
 - 保留旧的 `Swap.app`，新成品为 `Swap-v2.app`（版本 `1.2`），`current.app` 指向 `Swap-v2.app`。
 - 当前最优 = `Swap-v2.app`。
+
+### 2026-08-17（成品命名整理）
+
+- 按最新要求取消 `-v2` 和 `current.app` 命名，只保留固定成品名 `Swap.app`。
+- 已验证的版本 `1.2` 从 `Swap-v2.app` 改为 `Swap.app` 并重新启动；按钮仍为空白，功能代码未变。
+- 旧版本 `1.1` 已移到废纸篓 `Swap-old-20260817.app`，需要时仍可恢复。
+- 当前最优 = `Swap.app`（版本 `1.2`）。
